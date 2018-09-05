@@ -3,9 +3,8 @@
 #SBATCH --partition=cscsci
 #SBATCH -C gpu
 
-rfm_exec=$1
-shift
+commit=$1
 
 module load reframe
 
-$rfm_exec --system=daint:gpu -C ci/rfm-config.py -c ci/arbor_tests.py $*
+../reframe/bin/reframe --system=daint:gpu -C ci/rfm-config.py -c ci/arbor_tests.py --prefix=$SCRATCH/arbor-ci-$commit --exec-policy=async -r
