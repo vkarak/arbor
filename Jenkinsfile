@@ -6,12 +6,13 @@ stage('Testing') {
                 userRemoteConfigs: [[url: 'https://github.com/eth-cscs/reframe.git']]])
         }
         dir('arbor') {
+            uniqueID = "${env.ghprbActualCommit[0..6]}-${env.BUILD_ID}"
             checkout([$class: 'GitSCM', branches: [[name: 'ci/reframe-tests']],
                 extensions: [[$class: 'WipeWorkspace']], 
                 userRemoteConfigs: [[url: 'https://github.com/vkarak/arbor.git']]])
             sh("""#!/bin/bash -l
                   git submodule update --init --recursive
-                  sbatch --wait -o arbor-ci.out ci/cscs-daint-gpu.sh ../reframe/bin/reframe
+                  sbatch --wait -o arbor-ci.out ci/cscs-daint-gpu.sh ../reframe/bin/reframe --prefix=\$SCRATCH/"arbor-ci-${uniqueID}" --exec-policy=async -r
                   exit_status=\$?
                   cat arbor-ci.out
                   exit \$exit_status
