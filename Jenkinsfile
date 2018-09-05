@@ -12,7 +12,9 @@ stage('Testing') {
             sh("""#!/bin/bash -l
                   git submodule update --init --recursive
                   sbatch --wait -o arbor-ci.out ci/cscs-daint-gpu.sh ../reframe/bin/reframe
+                  exit_status=\$?
                   cat arbor-ci.out
+                  exit \$exit_status
                """)
         }
         deleteDir()
