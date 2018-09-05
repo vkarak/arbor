@@ -8,21 +8,30 @@ import reframe.utility.sanity as sn
 class ArborBaseTest(rfm.RegressionTest):
     def __init__(self):
         super().__init__()
-        self.valid_systems = ['daint:gpu', 'daint:mc', 'dom:gpu', 'dom:mc']
-        self.valid_prog_environs = ['PrgEnv-gnu']
+        self.valid_systems = ['daint:gpu', 'daint:mc', 'tresa']
+        self.valid_prog_environs = ['PrgEnv-gnu', 'PrgEnv-clang']
         self.sourcesdir = os.path.join(self.prefix, '..')
         self.executable = './build/bin/unit'
-        self.variables = {'CRAYPE_LINK_TYPE': 'dynamic'}
+        if self.current_system.name.startswith('daint'):
+            self.variables = {'CRAYPE_LINK_TYPE': 'dynamic'}
+
         self.sanity_patterns = sn.assert_found('PASSED', self.stdout)
         self.build_system = 'Make'
         self.build_system.flags_from_environ = False
+        self.modules = ['CMake', 'gcc/7.1.0']
+        self.tags = {'sanity'}
+
+    def setup(self, partition, environ, **job_opts):
+        config_opts = [
+            '-DCMAKE_C_COMPILER=%s' % environ.cc,
+            '-DCMAKE_CXX_COMPILER=%s' % environ.cxx
+        ] + self.cmake_options
         self.prebuild_cmd = [
             'mkdir build',
             'cd build',
-            'cmake .. %s' % ' '.join(self.cmake_options)
+            'cmake .. %s' % ' '.join(config_opts)
         ]
-        self.modules = ['CMake', 'gcc/7.1.0']
-        self.tags = {'sanity'}
+        super().setup(partition, environ, **job_opts)
 
     @property
     def cmake_options(self):
@@ -31,6 +40,11 @@ class ArborBaseTest(rfm.RegressionTest):
 
 @rfm.simple_test
 class ArborMPITest(ArborBaseTest):
+    def __init__(self):
+        super().__init__()
+        self.valid_systems = ['daint:gpu', 'daint:mc']
+        self.valid_prog_environs = ['PrgEnv-gnu']
+
     @property
     def cmake_options(self):
         return ['-DARB_WITH_ASSERTIONS=ON',
@@ -41,7 +55,7 @@ class ArborMPITest(ArborBaseTest):
 class ArborGpuTest(ArborBaseTest):
     def __init__(self):
         super().__init__()
-        self.valid_systems = ['daint:gpu', 'dom:gpu']
+        self.valid_systems = ['daint:gpu']
         self.valid_prog_environs = ['PrgEnv-gnu']
         self.modules += ['craype-accel-nvidia60']
 
@@ -51,17 +65,18 @@ class ArborGpuTest(ArborBaseTest):
                 '-DARB_GPU_MODEL=P100']
 
 
-@rfm.parameterized_test(['haswell'], ['broadwell'])
+@rfm.parameterized_test(['haswell'], ['broadwell'], ['native'])
 class ArborSIMDTest(ArborBaseTest):
     def __init__(self, arch_kind):
-        self.arch_kind = arch_kind
         super().__init__()
         if arch_kind == 'haswell':
             self.valid_systems = ['daint:gpu']
         elif arch_kind == 'broadwell':
-            self.valid_systems = ['daint:mc']
-        else:
-            self.valid_systems = []
+            self.valid_systems = ['daint:mc', 'tresa']
+        elif arch_kind == 'native':
+            self.valid_systems = ['tresa']
+
+        self.arch_kind = arch_kind
 
     @property
     def cmake_options(self):

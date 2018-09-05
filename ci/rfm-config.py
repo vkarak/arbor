@@ -12,50 +12,48 @@ class ReframeSettings:
     site_configuration = {
         'systems': {
             'daint': {
-                'descr': 'Piz Daint',
+                'descr': 'Piz Daint compute nodes',
                 'hostnames': ['daint'],
                 'modules_system': 'tmod',
-                'resourcesdir': '/apps/common/UES/reframe/resources',
                 'partitions': {
-                    'login': {
-                        'scheduler': 'local',
-                        'modules': [],
-                        'access':  [],
-                        'environs': ['PrgEnv-cray', 'PrgEnv-gnu',
-                                     'PrgEnv-intel', 'PrgEnv-pgi'],
-                        'descr': 'Login nodes',
-                        'max_jobs': 4
-                    },
-
                     'gpu': {
-                        'scheduler': 'nativeslurm',
+                        'scheduler': 'local+srun',
                         'modules': ['daint-gpu'],
-                        'access':  ['--constraint=gpu'],
                         'environs': ['PrgEnv-cray', 'PrgEnv-gnu',
                                      'PrgEnv-intel', 'PrgEnv-pgi'],
                         'descr': 'Hybrid nodes (Haswell/P100)',
                         'max_jobs': 100,
-                        'resources': {
-                            'switches': ['--switches={num_switches}']
-                        }
                     },
-
                     'mc': {
-                        'scheduler': 'nativeslurm',
+                        'scheduler': 'local+srun',
                         'modules': ['daint-mc'],
-                        'access':  ['--constraint=mc'],
                         'environs': ['PrgEnv-cray', 'PrgEnv-gnu',
                                      'PrgEnv-intel', 'PrgEnv-pgi'],
                         'descr': 'Multicore nodes (Broadwell)',
-                        'max_jobs': 100,
-                        'resources': {
-                            'switches': ['--switches={num_switches}']
-                        }
                     }
                 }
             },
-
+            'tresa': {
+                'descr': 'My Mac',
+                'hostnames': ['tresa'],
+                'partitions': {
+                    'login': {
+                        'scheduler': 'local',
+                        'environs': ['PrgEnv-clang'],
+                        'descr': 'My Mac',
+                    }
+                }
+            }
+        },
         'environments': {
+            'tresa': {
+                'PrgEnv-clang': {
+                    'type': 'ProgEnvironment',
+                    'cc': 'clang',
+                    'cxx': 'clang++',
+                    'ftn': None
+                }
+            },
             '*': {
                 'PrgEnv-cray': {
                     'type': 'ProgEnvironment',
@@ -91,7 +89,8 @@ class ReframeSettings:
                     'ftn': 'gfortran',
                 }
             }
-        },
+        }
+    }
 
     logging_config = {
         'level': 'DEBUG',
