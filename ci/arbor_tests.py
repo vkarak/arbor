@@ -51,9 +51,20 @@ class ArborGpuTest(ArborBaseTest):
                 '-DARB_GPU_MODEL=P100']
 
 
-@rfm.simple_test
+@rfm.parameterized_test(['haswell'], ['broadwell'])
 class ArborSIMDTest(ArborBaseTest):
+    def __init__(self, arch_kind):
+        self.arch_kind = arch_kind
+        super().__init__()
+        if arch_kind == 'haswell':
+            self.valid_systems = ['daint:gpu']
+        elif arch_kind == 'broadwell':
+            self.valid_systems = ['daint:mc']
+        else:
+            self.valid_systems = []
+
     @property
     def cmake_options(self):
         return ['-DARB_WITH_ASSERTIONS=ON',
-                '-DARB_VECTORIZE=ON']
+                '-DARB_VECTORIZE=ON',
+                '-DARB_ARCH=%s' % self.arch_kind]
