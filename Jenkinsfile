@@ -6,12 +6,7 @@ stage('Testing') {
                 userRemoteConfigs: [[url: 'https://github.com/eth-cscs/reframe.git']]])
         }
         dir('arbor') {
-           checkout([$class: 'GitSCM', branches: [[name: 'ci/reframe-tests']], doGenerateSubmoduleConfigurations: false,
-                      extensions: [[$class: 'WipeWorkspace'],
-                                   [$class: 'SubmoduleOption', disableSubmodules: false,
-                                    recursiveSubmodules: true, reference: '', trackingSubmodules: true]
-                                  ],
-                      submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/vkarak/arbor.git']]])
+           checkout([$class: 'GitSCM', branches: [[name: 'ci/reframe-tests']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'WipeWorkspace'], [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/vkarak/arbor.git']]])
             sh("""#!/bin/bash -l
                   sbatch --wait -o arbor-ci.out ci/cscs-daint-gpu.sh ../reframe/bin/reframe
                   cat arbor-ci.out
