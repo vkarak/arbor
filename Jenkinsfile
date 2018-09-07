@@ -7,9 +7,7 @@ stage('Testing') {
         }
         dir('arbor') {
             uniqueID = "${env.ghprbActualCommit[0..6]}-${env.BUILD_ID}"
-            checkout([$class: 'GitSCM', branches: [[name: 'ci/reframe-tests']],
-                extensions: [[$class: 'WipeWorkspace']], 
-                userRemoteConfigs: [[url: 'https://github.com/vkarak/arbor.git']]])
+            checkout scm
             sh("""#!/bin/bash -l
                   git submodule update --init --recursive
                   sbatch --wait -o arbor-ci.out ci/cscs-daint-gpu.sh ${uniqueID}
@@ -17,6 +15,7 @@ stage('Testing') {
                   cat arbor-ci.out
                   exit \$exit_status
                """)
+            archiveArtifacts 'arbor-ci.out,reframe.out,reframe.log'
         }
         deleteDir()
     }
