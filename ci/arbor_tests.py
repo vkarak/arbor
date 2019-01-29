@@ -15,11 +15,13 @@ class ArborBaseTest(rfm.RegressionTest):
         if self.current_system.name.startswith('daint'):
             self.variables = {'CRAYPE_LINK_TYPE': 'dynamic'}
 
+        self.modules = ['CMake', 'gcc/7.1.0']
         self.sanity_patterns = sn.assert_found('PASSED', self.stdout)
+
         self.build_system = 'CMake'
         self.build_system.builddir = 'build'
         self.build_system.config_opts = ['-DARB_WITH_ASSERTIONS=ON']
-        self.modules = ['CMake', 'gcc/7.1.0']
+
         self.tags = {'sanity'}
 
 
@@ -29,8 +31,7 @@ class ArborMPITest(ArborBaseTest):
         super().__init__()
         self.valid_systems = ['daint:gpu', 'daint:mc']
         self.valid_prog_environs = ['PrgEnv-gnu']
-        self.build_system.config_opts = ['-DARB_WITH_ASSERTIONS=ON',
-                                         '-DARB_WITH_MPI=ON']
+        self.build_system.config_opts += ['-DARB_WITH_MPI=ON']
 
 
 @rfm.simple_test
@@ -40,8 +41,7 @@ class ArborGpuTest(ArborBaseTest):
         self.valid_systems = ['daint:gpu']
         self.valid_prog_environs = ['PrgEnv-gnu']
         self.modules += ['craype-accel-nvidia60']
-        self.build_system.config_opts = ['-DARB_WITH_ASSERTIONS=ON',
-                                         '-DARB_GPU_MODEL=P100']
+        self.build_system.config_opts += ['-DARB_GPU_MODEL=P100']
 
 
 @rfm.parameterized_test(['haswell'], ['broadwell'], ['native'])
@@ -56,6 +56,5 @@ class ArborSIMDTest(ArborBaseTest):
             self.valid_systems = ['tresa']
 
         self.arch_kind = arch_kind
-        self.build_system.config_opts = ['-DARB_WITH_ASSERTIONS=ON',
-                                         '-DARB_VECTORIZE=ON',
-                                         '-DARB_ARCH=%s' % self.arch_kind]
+        self.build_system.config_opts += ['-DARB_VECTORIZE=ON',
+                                          '-DARB_ARCH=%s' % self.arch_kind]
